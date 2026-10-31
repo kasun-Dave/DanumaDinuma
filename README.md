@@ -23,6 +23,13 @@ A production-ready full-stack medical education MCQ practice platform for MBBS s
 - **Review Queue** — Review and publish unpublished questions
 - **Admin Dashboard** — User stats, attempt analytics, activity logs
 
+## 👤 Guest mode (no account, no database)
+
+"Start Learning Free" on the landing page, or "Continue as guest" on the login and register pages, opens the app without an account.
+Guest mode runs entirely in the browser: it uses the 20 built-in Physiology MCQs (`client/src/data/guestQuestions.ts`) and keeps
+quizzes, XP, streaks, bookmarks and analytics in `localStorage`, so it works even when the API and MongoDB are not set up.
+Leaderboards, friends and the admin tools need a real account (see Deployment).
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology |

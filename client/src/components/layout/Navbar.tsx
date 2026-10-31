@@ -22,7 +22,7 @@ const adminLinks = [
 ];
 
 export default function Navbar() {
-  const { user, logout: logoutStore } = useAuthStore();
+  const { user, isGuest, logout: logoutStore } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,7 +34,8 @@ export default function Navbar() {
     navigate('/login');
   };
 
-  const links = user?.role === 'admin' ? [...studentLinks, ...adminLinks] : studentLinks;
+  const memberLinks = isGuest ? studentLinks.filter((l) => l.to !== '/leaderboards' && l.to !== '/friends') : studentLinks;
+  const links = user?.role === 'admin' ? [...memberLinks, ...adminLinks] : memberLinks;
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-xl">
@@ -78,7 +79,7 @@ export default function Navbar() {
                     <p className="text-xs text-muted-foreground">{user.xp} XP</p>
                   </div>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={handleLogout} className="rounded-full text-muted-foreground hover:text-destructive">
+                <Button variant="ghost" size="icon" onClick={handleLogout} title={isGuest ? 'Exit guest mode' : 'Logout'} className="rounded-full text-muted-foreground hover:text-destructive">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
@@ -107,7 +108,7 @@ export default function Navbar() {
               <button onClick={handleLogout}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 w-full">
                 <LogOut className="h-5 w-5" />
-                Logout
+                {isGuest ? 'Exit guest mode' : 'Logout'}
               </button>
             )}
           </div>

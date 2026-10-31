@@ -1,10 +1,13 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
+import { guestAdapter } from '@/lib/guestApi';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
   withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
+  // Guest mode answers locally (bundled questions + localStorage); everything else hits the real API.
+  adapter: (config) => (useAuthStore.getState().isGuest ? guestAdapter(config) : axios.getAdapter(axios.defaults.adapter)(config)),
 });
 
 // Request interceptor - attach access token

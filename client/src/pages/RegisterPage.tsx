@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/authStore';
+import { GuestButton } from '@/components/GuestButton';
 import api from '@/lib/api';
 
 interface RegisterForm { name: string; username: string; email: string; password: string; }
@@ -96,6 +97,12 @@ export default function RegisterPage() {
                 Create Account
               </Button>
             </form>
+
+            <div className="relative my-5">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
+            </div>
+            <GuestButton variant="outline" className="w-full">Continue as guest, no sign-up</GuestButton>
 
             <div className="mt-6 text-center text-sm text-muted-foreground">
               Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>

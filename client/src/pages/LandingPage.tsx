@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { GuestButton } from '@/components/GuestButton';
 import { motion } from 'framer-motion';
 import { BookOpen, Brain, Trophy, BarChart3, Clock, Users, Zap, Shield, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -63,11 +64,9 @@ export default function LandingPage() {
               Practice MCQs, track your progress, compete with peers, and ace your MBBS exams with our intelligent learning platform.
             </p>
             <div className="flex flex-wrap justify-center gap-4 mt-10">
-              <Link to="/register">
-                <Button size="lg" className="text-lg px-8 bg-gradient-to-r from-primary to-indigo-600 shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-shadow">
-                  Start Learning Free<ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
-              </Link>
+              <GuestButton size="lg" className="text-lg px-8 bg-gradient-to-r from-primary to-indigo-600 shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-shadow">
+                Start Learning Free<ArrowRight className="h-5 w-5 ml-2" />
+              </GuestButton>
               <Link to="/login">
                 <Button size="lg" variant="outline" className="text-lg px-8">Sign In</Button>
               </Link>
