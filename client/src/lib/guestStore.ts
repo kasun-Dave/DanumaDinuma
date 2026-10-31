@@ -1,4 +1,5 @@
 import type { User } from '@/stores/authStore';
+import { translate, useLangStore } from '@/lib/i18n';
 
 // Guest mode keeps everything in this browser (localStorage). No account, API or database needed.
 
@@ -7,6 +8,7 @@ const KEY = 'danumadinuma-guest';
 export interface GuestQuiz {
   _id: string;
   userId: string;
+  testId?: string;
   type: 'practice' | 'timed';
   subject: string;
   topics: string[];
@@ -127,7 +129,7 @@ export function buildGuestUser(): User {
   const stats = computeStats(state);
   return {
     _id: 'guest',
-    name: state.profile.name || 'Guest',
+    name: state.profile.name || translate(useLangStore.getState().lang, 'guest.name'),
     email: '',
     username: 'guest',
     avatar: '',

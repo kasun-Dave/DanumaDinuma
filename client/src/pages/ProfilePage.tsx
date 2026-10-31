@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
 import api from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 export default function ProfilePage() {
+  const { t } = useT();
   const { user, setUser } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
   const [name, setName] = useState(user?.name || '');
@@ -32,8 +34,8 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold flex items-center gap-2"><User className="h-8 w-8 text-primary" />Profile</h1>
-        <p className="text-muted-foreground mt-1">Manage your account settings</p>
+        <h1 className="text-3xl font-bold flex items-center gap-2"><User className="h-8 w-8 text-primary" />{t('profile.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('profile.subtitle')}</p>
       </motion.div>
 
       {/* Avatar */}
@@ -50,7 +52,7 @@ export default function ProfilePage() {
             <p className="text-sm text-muted-foreground mt-1">{user?.email}</p>
             <div className="flex gap-4 mt-2 text-sm">
               <span className="text-primary font-bold">{user?.xp} XP</span>
-              <span className="text-accent font-bold">🔥 {user?.streak} day streak</span>
+              <span className="text-accent font-bold">🔥 {t('profile.streak', { n: user?.streak ?? 0 })}</span>
             </div>
           </div>
         </CardContent>
@@ -58,33 +60,33 @@ export default function ProfilePage() {
 
       {/* Edit Form */}
       <Card>
-        <CardHeader><CardTitle>Edit Profile</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t('profile.editTitle')}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Full Name</Label>
+            <Label>{t('profile.fullName')}</Label>
             <Input value={name} onChange={e => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>College</Label>
-            <Input value={college} onChange={e => setCollege(e.target.value)} placeholder="Your medical college" />
+            <Label>{t('profile.college')}</Label>
+            <Input value={college} onChange={e => setCollege(e.target.value)} placeholder={t('profile.collegePlaceholder')} />
           </div>
           <div className="space-y-2">
-            <Label>Year</Label>
+            <Label>{t('profile.year')}</Label>
             <select value={year} onChange={e => setYear(+e.target.value)}
               className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-sm">
-              {[1,2,3,4,5].map(y => <option key={y} value={y}>Year {y}</option>)}
+              {[1,2,3,4,5].map(y => <option key={y} value={y}>{t('profile.yearN', { n: y })}</option>)}
             </select>
           </div>
           <div className="space-y-2">
-            <Label>Theme</Label>
+            <Label>{t('profile.theme')}</Label>
             <div className="flex gap-3">
-              <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => { if (theme !== 'light') toggleTheme(); }}>☀️ Light</Button>
-              <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => { if (theme !== 'dark') toggleTheme(); }}>🌙 Dark</Button>
+              <Button variant={theme === 'light' ? 'default' : 'outline'} onClick={() => { if (theme !== 'light') toggleTheme(); }}>☀️ {t('profile.themeLight')}</Button>
+              <Button variant={theme === 'dark' ? 'default' : 'outline'} onClick={() => { if (theme !== 'dark') toggleTheme(); }}>🌙 {t('profile.themeDark')}</Button>
             </div>
           </div>
           <Button onClick={handleSave} disabled={loading} className="w-full">
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-            {success ? '✓ Saved!' : 'Save Changes'}
+            {success ? `✓ ${t('profile.saved')}` : t('profile.save')}
           </Button>
         </CardContent>
       </Card>
@@ -92,13 +94,13 @@ export default function ProfilePage() {
       {/* Badges */}
       {user?.badges && user.badges.length > 0 && (
         <Card>
-          <CardHeader><CardTitle>🏅 Your Badges</CardTitle></CardHeader>
+          <CardHeader><CardTitle>🏅 {t('profile.badges')}</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {user.badges.map((b: any) => (
                 <div key={b._id || b} className="p-3 rounded-xl bg-muted/50 text-center">
                   <span className="text-2xl">{b.icon || '🏅'}</span>
-                  <p className="text-sm font-medium mt-1">{b.name || 'Badge'}</p>
+                  <p className="text-sm font-medium mt-1">{b.name || t('profile.badgeFallback')}</p>
                   <p className="text-xs text-muted-foreground">{b.description || ''}</p>
                 </div>
               ))}

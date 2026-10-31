@@ -23,7 +23,7 @@
   --color-input: #e2e8f0;
   --color-ring: #4f46e5;
   --radius: 0.75rem;
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', 'Noto Sans Sinhala', 'Iskoola Pota', 'Nirmala UI', system-ui, -apple-system, sans-serif;
 }
 
 @layer base {
@@ -63,6 +63,10 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* Sinhala needs more line height and no negative tracking */
+:lang(si) body { line-height: 1.7; }
+:lang(si) * { letter-spacing: normal !important; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }

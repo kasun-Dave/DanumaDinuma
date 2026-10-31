@@ -1,4 +1,4 @@
-# 🏥 Danuma Dinuma
+# 🌍 Danuma Dinuma
 
 A production-ready full-stack medical education MCQ practice platform for MBBS students.
 
@@ -26,9 +26,19 @@ A production-ready full-stack medical education MCQ practice platform for MBBS s
 ## 👤 Guest mode (no account, no database)
 
 "Start Learning Free" on the landing page, or "Continue as guest" on the login and register pages, opens the app without an account.
-Guest mode runs entirely in the browser: it uses the 20 built-in Physiology MCQs (`client/src/data/guestQuestions.ts`) and keeps
-quizzes, XP, streaks, bookmarks and analytics in `localStorage`, so it works even when the API and MongoDB are not set up.
-Leaderboards, friends and the admin tools need a real account (see Deployment).
+Guest mode runs entirely in the browser and keeps quizzes, XP, streaks, bookmarks and analytics in `localStorage`, so it works even
+when the API and MongoDB are not set up. Leaderboards, friends and the admin tools need a real account (see Deployment).
+
+## 🇱🇰 Sinhala content and interface
+
+- **Question bank:** 303 Sinhala current-affairs MCQs (foreign news, May-August 2026) in `client/src/data/sinhalaQuestions.ts`,
+  each with the correct answer from the source quiz PDF plus three written wrong options, tagged with 1 of 11 categories.
+  The 20 English Physiology MCQs (`guestQuestions.ts`) are kept as a separate subject.
+- **Papers:** `client/src/data/guestTests.ts` defines 31 ready-made papers of exactly 10 questions, grouped by category
+  (left-over questions form "Mixed" papers). They are listed on the **Papers** page; Practice still builds random quizzes by subject/category.
+- **Language:** the whole interface is available in Sinhala (default) and English. Switch with the language button in the header.
+  Translations live in `client/src/i18n/*.ts` (flat `en`/`si` key maps, merged automatically by `client/src/lib/i18n.ts`).
+- **Font:** Noto Sans Sinhala (Google Fonts) with Iskoola Pota / Nirmala UI fallbacks; see `client/index.html` and `client/src/index.css`.
 
 ## 🛠️ Tech Stack
 

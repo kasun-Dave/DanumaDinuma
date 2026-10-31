@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import api from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 export default function FriendsPage() {
+  const { t } = useT();
   const [friends, setFriends] = useState<any[]>([]);
   const [pending, setPending] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +28,7 @@ export default function FriendsPage() {
   };
 
   const sendRequest = async (recipientId: string) => {
-    try { await api.post('/friends/request', { recipientId }); setSearchResults(r => r.filter(u => u._id !== recipientId)); } catch (e: any) { alert(e.response?.data?.message || 'Failed'); }
+    try { await api.post('/friends/request', { recipientId }); setSearchResults(r => r.filter(u => u._id !== recipientId)); } catch (e: any) { alert(e.response?.data?.message || t('friends.failed')); }
   };
 
   const acceptRequest = async (friendshipId: string) => {
@@ -41,22 +43,22 @@ export default function FriendsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Users className="h-8 w-8 text-primary" />Friends</h1>
-        <p className="text-muted-foreground mt-1">Connect with fellow medical students</p>
+        <h1 className="text-3xl font-bold flex items-center gap-2"><Users className="h-8 w-8 text-primary" />{t('nav.friends')}</h1>
+        <p className="text-muted-foreground mt-1">{t('friends.subtitle')}</p>
       </motion.div>
 
       {/* Search */}
       <Card>
-        <CardHeader><CardTitle className="text-lg">Find Friends</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg">{t('friends.findTitle')}</CardTitle></CardHeader>
         <CardContent>
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-              <Input placeholder="Search by name, username, or email" className="pl-10" value={searchQuery}
+              <Input placeholder={t('friends.searchPlaceholder')} className="pl-10" value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} />
             </div>
             <Button onClick={handleSearch} disabled={searching}>
-              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
+              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : t('friends.search')}
             </Button>
           </div>
           {searchResults.length > 0 && (
@@ -67,7 +69,7 @@ export default function FriendsPage() {
                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-bold">{u.name?.charAt(0)}</div>
                     <div><p className="font-medium">{u.name}</p><p className="text-xs text-muted-foreground">@{u.username}</p></div>
                   </div>
-                  <Button size="sm" onClick={() => sendRequest(u._id)}><UserPlus className="h-4 w-4 mr-1" />Add</Button>
+                  <Button size="sm" onClick={() => sendRequest(u._id)}><UserPlus className="h-4 w-4 mr-1" />{t('friends.add')}</Button>
                 </div>
               ))}
             </div>
@@ -78,7 +80,7 @@ export default function FriendsPage() {
       {/* Pending Requests */}
       {pending.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-lg">Pending Requests ({pending.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-lg">{t('friends.pendingTitle', { n: pending.length })}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
             {pending.map(r => (
               <div key={r._id} className="flex items-center justify-between p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
@@ -98,10 +100,10 @@ export default function FriendsPage() {
 
       {/* Friends List */}
       <Card>
-        <CardHeader><CardTitle className="text-lg">Your Friends ({friends.length})</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-lg">{t('friends.yourFriendsTitle', { n: friends.length })}</CardTitle></CardHeader>
         <CardContent>
           {friends.length === 0 ? (
-            <div className="text-center py-8"><Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" /><p className="text-muted-foreground">No friends yet. Search and connect!</p></div>
+            <div className="text-center py-8"><Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" /><p className="text-muted-foreground">{t('friends.empty')}</p></div>
           ) : (
             <div className="space-y-2">
               {friends.map(f => (

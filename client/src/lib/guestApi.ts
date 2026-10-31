@@ -1,5 +1,7 @@
 import { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
-import { guestQuestions, type GuestQuestion } from '@/data/guestQuestions';
+import { allQuestions, guestTests } from '@/data/bank';
+import type { GuestQuestion } from '@/data/guestQuestions';
+import { translate, useLangStore } from '@/lib/i18n';
 import { useAuthStore } from '@/stores/authStore';
 import {
   GUEST_BADGES, buildGuestUser, calculateXp, computeStats, dayKey, loadGuest, newId, saveGuest,
@@ -9,7 +11,10 @@ import {
 // Axios adapter that answers the app's API calls from the bundled question bank and
 // localStorage, so guest mode works with no backend. Response shapes mirror server/src.
 
-const byId = new Map<string, GuestQuestion>(guestQuestions.map((q) => [q._id, q]));
+const byId = new Map<string, GuestQuestion>(allQuestions.map((q) => [q._id, q]));
+
+// Messages shown to the user come from the i18n files so they follow the chosen language.
+const tr = (key: string) => translate(useLangStore.getState().lang, key);
 
 function respond(config: InternalAxiosRequestConfig, data: unknown, status = 200): AxiosResponse {
   return { data, status, statusText: String(status), headers: {}, config, request: {} };
@@ -57,17 +62,24 @@ const weakTopics = (state: GuestState) =>
   topicStats(state).filter((t) => t.accuracy < 70).sort((a, b) => a.accuracy - b.accuracy).slice(0, 5);
 
 function createQuiz(config: InternalAxiosRequestConfig, state: GuestState) {
-  const { type, subject, topics, difficulty, questionCount, timeLimit, negativeMarking } = parseBody(config);
-  const pool = guestQuestions.filter((q) =>
-    (!subject || q.subject === subject) &&
-    (!topics?.length || topics.includes(q.topic)) &&
-    (!difficulty || difficulty === 'mixed' || q.difficulty === difficulty));
-  if (pool.length === 0) fail(config, 404, 'No questions found matching criteria');
+  const { type, subject, topics, difficulty, questionCount, timeLimit, negativeMarking, testId } = parseBody(config);
 
-  const questions = shuffle(pool).slice(0, Math.max(1, Number(questionCount) || 10));
+  // A ready-made paper: fixed 10 questions in fixed order.
+  const test = testId ? guestTests.find((t) => t._id === testId) : undefined;
+  if (testId && !test) fail(config, 404, tr('api.noQuestions'));
+
+  const pool = test
+    ? test.questionIds.map((id) => byId.get(id)).filter((q): q is GuestQuestion => !!q)
+    : allQuestions.filter((q) =>
+        (!subject || q.subject === subject) &&
+        (!topics?.length || topics.includes(q.topic)) &&
+        (!difficulty || difficulty === 'mixed' || q.difficulty === difficulty));
+  if (pool.length === 0) fail(config, 404, tr('api.noQuestions'));
+
+  const questions = test ? pool : shuffle(pool).slice(0, Math.max(1, Number(questionCount) || 10));
   const quiz: GuestQuiz = {
-    _id: newId(), userId: 'guest', type: type === 'timed' ? 'timed' : 'practice', subject: subject || '',
-    topics: topics || [], difficulty: difficulty || 'mixed', questionIds: questions.map((q) => q._id),
+    _id: newId(), userId: 'guest', type: type === 'timed' ? 'timed' : 'practice', subject: test ? test.category : subject || '',
+    testId: test?._id, topics: topics || [], difficulty: difficulty || 'mixed', questionIds: questions.map((q) => q._id),
     questionCount: questions.length, timeLimit: type === 'timed' ? timeLimit || 30 : 0,
     negativeMarking: !!negativeMarking, negativeMarkValue: 0.25, status: 'in_progress',
     score: 0, totalCorrect: 0, totalWrong: 0, totalSkipped: 0, xpEarned: 0, startedAt: new Date().toISOString(),
@@ -80,8 +92,8 @@ function createQuiz(config: InternalAxiosRequestConfig, state: GuestState) {
 function submitQuiz(config: InternalAxiosRequestConfig, state: GuestState) {
   const { quizId, answers } = parseBody(config);
   const quiz = state.quizzes.find((q) => q._id === quizId);
-  if (!quiz) fail(config, 404, 'Quiz not found');
-  if (quiz.status === 'completed') fail(config, 400, 'Quiz already submitted');
+  if (!quiz) fail(config, 404, tr('api.quizNotFound'));
+  if (quiz.status === 'completed') fail(config, 400, tr('api.alreadySubmitted'));
 
   const now = new Date().toISOString();
   let correct = 0, wrong = 0, skipped = 0, score = 0;
@@ -106,8 +118,9 @@ function submitQuiz(config: InternalAxiosRequestConfig, state: GuestState) {
   });
 
   const stats = computeStats(state);
-  const newBadges = GUEST_BADGES.filter((b) => b.earned(stats) && !state.badges.includes(b.name)).map((b) => b.name);
-  state.badges.push(...newBadges);
+  const earnedNow = GUEST_BADGES.filter((b) => b.earned(stats) && !state.badges.includes(b.name));
+  state.badges.push(...earnedNow.map((b) => b.name));
+  const newBadges = earnedNow.map((b) => tr(`badge.${b.name}`));
   saveGuest(state);
   syncUser();
 
@@ -128,7 +141,7 @@ function dashboard(config: InternalAxiosRequestConfig, state: GuestState) {
     totalAttempts: state.attempts.length, averageScore, quizzesCompleted: done.length, xp: stats.xp,
     streak: stats.streak, longestStreak: stats.longestStreak, bookmarkCount: state.bookmarks.length,
     leaderboardRank: 0, weakTopics: weakTopics(state), recentQuizzes: [...done].reverse().slice(0, 5),
-    badges: GUEST_BADGES.filter((b) => state.badges.includes(b.name)).map(({ name, description, icon }) => ({ name, description, icon })),
+    badges: GUEST_BADGES.filter((b) => state.badges.includes(b.name)).map(({ name, description, icon }) => ({ name: tr(`badge.${name}`), description, icon })),
   } });
 }
 
@@ -168,7 +181,7 @@ export async function guestAdapter(config: InternalAxiosRequestConfig): Promise<
 
   if (route === 'get /questions/subjects') {
     const map = new Map<string, { count: number; topics: Set<string> }>();
-    for (const q of guestQuestions) {
+    for (const q of allQuestions) {
       const s = map.get(q.subject) || { count: 0, topics: new Set<string>() };
       s.count++;
       s.topics.add(q.topic);
@@ -178,12 +191,24 @@ export async function guestAdapter(config: InternalAxiosRequestConfig): Promise<
       .map(([_id, s]) => ({ _id, count: s.count, topics: [...s.topics] }));
     return respond(config, { subjects });
   }
+  if (route === 'get /tests') {
+    const done = state.quizzes.filter((q) => q.status === 'completed' && q.testId);
+    const tests = guestTests.map((test, i) => {
+      const mine = done.filter((q) => q.testId === test._id);
+      return {
+        _id: test._id, number: i + 1, category: test.category, questionCount: test.questionIds.length,
+        attempts: mine.length,
+        bestPercent: mine.length ? Math.max(...mine.map((q) => percent(q.totalCorrect, q.questionCount))) : null,
+      };
+    });
+    return respond(config, { tests });
+  }
   if (route === 'post /quiz/create') return createQuiz(config, state);
   if (route === 'post /quiz/submit') return submitQuiz(config, state);
   if (method === 'get' && path.startsWith('/quiz/')) {
     const id = path.slice('/quiz/'.length);
     const quiz = state.quizzes.find((q) => q._id === id);
-    if (!quiz) fail(config, 404, 'Quiz not found');
+    if (!quiz) fail(config, 404, tr('api.quizNotFound'));
     return respond(config, {
       quiz: { ...quiz, questionIds: quiz.questionIds.map((qid) => byId.get(qid)) },
       attempts: state.attempts.filter((a) => a.quizId === id),
@@ -192,7 +217,7 @@ export async function guestAdapter(config: InternalAxiosRequestConfig): Promise<
   if (route === 'get /bookmarks') return bookmarks(config, state);
   if (route === 'post /bookmarks/toggle') {
     const { questionId } = parseBody(config);
-    if (!byId.has(questionId)) fail(config, 404, 'Question not found');
+    if (!byId.has(questionId)) fail(config, 404, tr('api.questionNotFound'));
     const has = state.bookmarks.includes(questionId);
     state.bookmarks = has ? state.bookmarks.filter((id) => id !== questionId) : [...state.bookmarks, questionId];
     saveGuest(state);
@@ -221,5 +246,5 @@ export async function guestAdapter(config: InternalAxiosRequestConfig): Promise<
   if (route === 'get /friends') return respond(config, { friends: [], pendingRequests: [] });
   if (route === 'get /friends/search') return respond(config, { users: [] });
 
-  return fail(config, 404, 'Not available in guest mode');
+  return fail(config, 404, tr('api.notAvailable'));
 }

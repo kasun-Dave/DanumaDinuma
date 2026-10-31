@@ -6,8 +6,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import api from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 export default function ResultsPage() {
+  const { t } = useT();
   const { id } = useParams();
   const location = useLocation();
   const [result, setResult] = useState<any>(location.state?.result || null);
@@ -31,7 +33,7 @@ export default function ResultsPage() {
   }, [id]);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
-  if (!result) return <div className="text-center py-16"><p>Result not found</p><Link to="/dashboard"><Button className="mt-4">Go to Dashboard</Button></Link></div>;
+  if (!result) return <div className="text-center py-16"><p>{t('results.notFound')}</p><Link to="/dashboard"><Button className="mt-4">{t('results.goDashboard')}</Button></Link></div>;
 
   const isPassing = result.percentage >= 70;
   const grade = result.percentage >= 90 ? 'A+' : result.percentage >= 80 ? 'A' : result.percentage >= 70 ? 'B' : result.percentage >= 60 ? 'C' : result.percentage >= 50 ? 'D' : 'F';
@@ -47,15 +49,15 @@ export default function ResultsPage() {
               <div className={`inline-flex items-center justify-center h-32 w-32 rounded-full border-8 ${isPassing ? 'border-accent/20' : 'border-destructive/20'} mb-4`}>
                 <div className="text-center">
                   <p className="text-4xl font-bold">{result.percentage}%</p>
-                  <p className="text-sm text-muted-foreground">Grade: {grade}</p>
+                  <p className="text-sm text-muted-foreground">{t('results.grade', { grade })}</p>
                 </div>
               </div>
             </motion.div>
             <h2 className="text-2xl font-bold mt-4">
-              {isPassing ? '🎉 Great Job!' : '📚 Keep Practicing!'}
+              {isPassing ? `🎉 ${t('results.greatJob')}` : `📚 ${t('results.keepPracticing')}`}
             </h2>
             <p className="text-muted-foreground mt-1">
-              {isPassing ? 'You passed with flying colors!' : 'Review the explanations and try again.'}
+              {isPassing ? t('results.passed') : t('results.reviewTryAgain')}
             </p>
           </CardContent>
         </Card>
@@ -64,12 +66,12 @@ export default function ResultsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Correct', value: result.totalCorrect, icon: CheckCircle, color: 'text-accent' },
-          { label: 'Wrong', value: result.totalWrong, icon: XCircle, color: 'text-destructive' },
-          { label: 'Skipped', value: result.totalSkipped, icon: SkipForward, color: 'text-amber-500' },
-          { label: 'XP Earned', value: `+${result.xpEarned}`, icon: Zap, color: 'text-primary' },
+          { id: 'correct', label: t('results.correct'), value: result.totalCorrect, icon: CheckCircle, color: 'text-accent' },
+          { id: 'wrong', label: t('results.wrong'), value: result.totalWrong, icon: XCircle, color: 'text-destructive' },
+          { id: 'skipped', label: t('results.skipped'), value: result.totalSkipped, icon: SkipForward, color: 'text-amber-500' },
+          { id: 'xpEarned', label: t('results.xpEarned'), value: `+${result.xpEarned}`, icon: Zap, color: 'text-primary' },
         ].map(s => (
-          <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div key={s.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
             <Card>
               <CardContent className="p-4 text-center">
                 <s.icon className={`h-6 w-6 ${s.color} mx-auto mb-1`} />
@@ -86,7 +88,7 @@ export default function ResultsPage() {
         <Card className="border-amber-500/30 bg-amber-500/5">
           <CardContent className="p-4 text-center">
             <Trophy className="h-8 w-8 text-amber-500 mx-auto mb-2" />
-            <h3 className="font-bold">New Badge{result.newBadges.length > 1 ? 's' : ''} Earned!</h3>
+            <h3 className="font-bold">{result.newBadges.length > 1 ? t('results.newBadges') : t('results.newBadge')}</h3>
             <div className="flex flex-wrap justify-center gap-2 mt-2">
               {result.newBadges.map((b: string) => <span key={b} className="px-3 py-1 bg-amber-500/10 rounded-full text-sm font-medium">{b}</span>)}
             </div>
@@ -97,25 +99,25 @@ export default function ResultsPage() {
       {/* Score breakdown bar */}
       <Card>
         <CardContent className="p-4 space-y-3">
-          <h3 className="font-semibold text-sm">Score Breakdown</h3>
+          <h3 className="font-semibold text-sm">{t('results.scoreBreakdown')}</h3>
           <div className="flex h-4 rounded-full overflow-hidden">
             <div className="bg-accent transition-all" style={{ width: `${(result.totalCorrect / result.totalQuestions) * 100}%` }} />
             <div className="bg-destructive transition-all" style={{ width: `${(result.totalWrong / result.totalQuestions) * 100}%` }} />
             <div className="bg-muted transition-all" style={{ width: `${(result.totalSkipped / result.totalQuestions) * 100}%` }} />
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-accent" />Correct</span>
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive" />Wrong</span>
-            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-muted" />Skipped</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-accent" />{t('results.correct')}</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-destructive" />{t('results.wrong')}</span>
+            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-muted" />{t('results.skipped')}</span>
           </div>
         </CardContent>
       </Card>
 
       {/* Actions */}
       <div className="flex flex-wrap gap-3 justify-center">
-        <Link to="/practice"><Button variant="outline"><RotateCcw className="h-4 w-4 mr-2" />Try Again</Button></Link>
-        <Link to="/dashboard"><Button><Home className="h-4 w-4 mr-2" />Dashboard</Button></Link>
-        <Link to="/analytics"><Button variant="secondary">View Analytics</Button></Link>
+        <Link to="/practice"><Button variant="outline"><RotateCcw className="h-4 w-4 mr-2" />{t('results.tryAgain')}</Button></Link>
+        <Link to="/dashboard"><Button><Home className="h-4 w-4 mr-2" />{t('results.dashboard')}</Button></Link>
+        <Link to="/analytics"><Button variant="secondary">{t('results.viewAnalytics')}</Button></Link>
       </div>
     </div>
   );

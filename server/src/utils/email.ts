@@ -37,7 +37,7 @@ export const sendPasswordResetEmail = async (to: string, resetToken: string): Pr
   const html = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="text-align: center; padding: 20px 0;">
-        <h1 style="color: #4F46E5; margin: 0;">🏥 Danuma Dinuma</h1>
+        <h1 style="color: #4F46E5; margin: 0;">🌍 Danuma Dinuma</h1>
       </div>
       <div style="background: #f8fafc; border-radius: 12px; padding: 32px;">
         <h2 style="color: #1e293b; margin-top: 0;">Reset Your Password</h2>

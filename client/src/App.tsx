@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect, lazy, Suspense } from 'react';
 import { useThemeStore } from '@/stores/themeStore';
+import { useLangStore } from '@/lib/i18n';
 import Layout from '@/components/layout/Layout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 
@@ -15,6 +16,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage'));
 const PracticePage = lazy(() => import('@/pages/PracticePage'));
+const PapersPage = lazy(() => import('@/pages/PapersPage'));
 const ResultsPage = lazy(() => import('@/pages/ResultsPage'));
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage'));
 const BookmarksPage = lazy(() => import('@/pages/BookmarksPage'));
@@ -49,10 +51,19 @@ function ThemeInitializer({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function LangInitializer({ children }: { children: React.ReactNode }) {
+  const { lang } = useLangStore();
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeInitializer>
+        <LangInitializer>
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
@@ -67,6 +78,7 @@ export default function App() {
               <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/practice" element={<PracticePage />} />
+                <Route path="/papers" element={<PapersPage />} />
                 <Route path="/quiz" element={<Navigate to="/practice" />} />
                 <Route path="/results/:id" element={<ResultsPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
@@ -89,6 +101,7 @@ export default function App() {
             </Routes>
           </Suspense>
         </BrowserRouter>
+        </LangInitializer>
       </ThemeInitializer>
     </QueryClientProvider>
   );

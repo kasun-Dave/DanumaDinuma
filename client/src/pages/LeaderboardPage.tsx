@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/authStore';
 import api from '@/lib/api';
+import { useT } from '@/lib/i18n';
 
 export default function LeaderboardPage() {
+  const { t } = useT();
   const { user } = useAuthStore();
   const [tab, setTab] = useState<'global' | 'college' | 'friends'>('global');
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -28,12 +30,12 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Trophy className="h-8 w-8 text-amber-500" />Leaderboard</h1>
-        <p className="text-muted-foreground mt-1">Compete with fellow medical students</p>
+        <h1 className="text-3xl font-bold flex items-center gap-2"><Trophy className="h-8 w-8 text-amber-500" />{t('nav.leaderboard')}</h1>
+        <p className="text-muted-foreground mt-1">{t('leaderboard.subtitle')}</p>
       </motion.div>
 
       <div className="flex gap-2">
-        {([['global', 'Global', Trophy], ['college', 'College', GraduationCap], ['friends', 'Friends', Users]] as const).map(([key, label, Icon]) => (
+        {([['global', t('leaderboard.tab.global'), Trophy], ['college', t('leaderboard.tab.college'), GraduationCap], ['friends', t('nav.friends'), Users]] as const).map(([key, label, Icon]) => (
           <Button key={key} variant={tab === key ? 'default' : 'outline'} onClick={() => setTab(key)} className="flex-1">
             <Icon className="h-4 w-4 mr-2" />{label}
           </Button>
@@ -47,8 +49,8 @@ export default function LeaderboardPage() {
           ) : leaderboard.length === 0 ? (
             <div className="p-12 text-center">
               <Trophy className="h-16 w-16 text-muted-foreground/30 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold">No data yet</h3>
-              <p className="text-muted-foreground">{tab === 'college' ? 'Set your college in profile' : tab === 'friends' ? 'Add friends to see their ranking' : 'Start earning XP!'}</p>
+              <h3 className="text-lg font-semibold">{t('leaderboard.emptyTitle')}</h3>
+              <p className="text-muted-foreground">{tab === 'college' ? t('leaderboard.emptyCollege') : tab === 'friends' ? t('leaderboard.emptyFriends') : t('leaderboard.emptyGlobal')}</p>
             </div>
           ) : (
             <div className="divide-y">
@@ -60,12 +62,12 @@ export default function LeaderboardPage() {
                     {entry.name?.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{entry.name}{entry._id === user?._id && <span className="text-xs text-primary ml-1">(You)</span>}</p>
+                    <p className="font-medium truncate">{entry.name}{entry._id === user?._id && <span className="text-xs text-primary ml-1">{t('leaderboard.you')}</span>}</p>
                     <p className="text-xs text-muted-foreground">@{entry.username}{entry.college ? ` • ${entry.college}` : ''}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <p className="font-bold text-primary">{entry.xp} XP</p>
-                    {entry.streak > 0 && <p className="text-xs text-muted-foreground">🔥 {entry.streak}d streak</p>}
+                    {entry.streak > 0 && <p className="text-xs text-muted-foreground">🔥 {t('leaderboard.streak', { n: entry.streak })}</p>}
                   </div>
                 </motion.div>
               ))}

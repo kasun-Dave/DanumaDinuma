@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import api from '@/lib/api';
+import { useT, useCatLabel } from '@/lib/i18n';
 
 export default function AdminPage() {
+  const { t } = useT();
+  const catLabel = useCatLabel();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,24 +21,24 @@ export default function AdminPage() {
   if (loading) return <div className="space-y-6"><Skeleton className="h-9 w-48" /><div className="grid grid-cols-2 md:grid-cols-4 gap-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}</div></div>;
 
   const cards = [
-    { label: 'Total Users', value: stats?.totalUsers || 0, icon: Users, color: 'from-blue-500 to-indigo-600' },
-    { label: 'Questions', value: stats?.totalQuestions || 0, icon: BookOpen, color: 'from-emerald-500 to-green-600' },
-    { label: 'Total Attempts', value: stats?.totalAttempts || 0, icon: Target, color: 'from-amber-500 to-orange-600' },
-    { label: 'Active Users (7d)', value: stats?.activeUsers || 0, icon: Activity, color: 'from-violet-500 to-purple-600' },
+    { label: t('admin.dashboard.totalUsers'), value: stats?.totalUsers || 0, icon: Users, color: 'from-blue-500 to-indigo-600' },
+    { label: t('admin.dashboard.questions'), value: stats?.totalQuestions || 0, icon: BookOpen, color: 'from-emerald-500 to-green-600' },
+    { label: t('admin.dashboard.totalAttempts'), value: stats?.totalAttempts || 0, icon: Target, color: 'from-amber-500 to-orange-600' },
+    { label: t('admin.dashboard.activeUsers'), value: stats?.activeUsers || 0, icon: Activity, color: 'from-violet-500 to-purple-600' },
   ];
 
   return (
     <div className="space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-bold flex items-center gap-2"><Shield className="h-8 w-8 text-primary" />Admin Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Manage questions, users, and content</p>
+        <h1 className="text-3xl font-bold flex items-center gap-2"><Shield className="h-8 w-8 text-primary" />{t('admin.dashboard.title')}</h1>
+        <p className="text-muted-foreground mt-1">{t('admin.dashboard.subtitle')}</p>
       </motion.div>
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
-        <Link to="/admin/questions"><Button><Plus className="h-4 w-4 mr-2" />Add Question</Button></Link>
-        <Link to="/admin/import"><Button variant="outline"><FileUp className="h-4 w-4 mr-2" />Import PDF/JSON</Button></Link>
-        <Link to="/admin/review"><Button variant="secondary"><CheckSquare className="h-4 w-4 mr-2" />Review Queue</Button></Link>
+        <Link to="/admin/questions"><Button><Plus className="h-4 w-4 mr-2" />{t('admin.addQuestion')}</Button></Link>
+        <Link to="/admin/import"><Button variant="outline"><FileUp className="h-4 w-4 mr-2" />{t('admin.dashboard.importPdfJson')}</Button></Link>
+        <Link to="/admin/review"><Button variant="secondary"><CheckSquare className="h-4 w-4 mr-2" />{t('admin.reviewQueue')}</Button></Link>
       </div>
 
       {/* Stats */}
@@ -54,12 +57,12 @@ export default function AdminPage() {
 
       {/* Top Topics */}
       {stats?.topTopics && stats.topTopics.length > 0 && (
-        <Card><CardHeader><CardTitle className="text-lg">Most Attempted Topics</CardTitle></CardHeader>
+        <Card><CardHeader><CardTitle className="text-lg">{t('admin.dashboard.topTopics')}</CardTitle></CardHeader>
           <CardContent><div className="space-y-2">
-            {stats.topTopics.map((t: any, i: number) => (
-              <div key={t._id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
-                <span className="font-medium text-sm">{i + 1}. {t._id}</span>
-                <span className="text-sm text-muted-foreground">{t.count} attempts</span>
+            {stats.topTopics.map((tp: any, i: number) => (
+              <div key={tp._id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50">
+                <span className="font-medium text-sm">{i + 1}. {catLabel(tp._id)}</span>
+                <span className="text-sm text-muted-foreground">{t('admin.dashboard.attemptsCount', { n: tp.count })}</span>
               </div>
             ))}
           </div></CardContent>
@@ -68,7 +71,7 @@ export default function AdminPage() {
 
       {/* Recent Logs */}
       {stats?.recentLogs && stats.recentLogs.length > 0 && (
-        <Card><CardHeader><CardTitle className="text-lg">Recent Activity</CardTitle></CardHeader>
+        <Card><CardHeader><CardTitle className="text-lg">{t('admin.dashboard.recentActivity')}</CardTitle></CardHeader>
           <CardContent><div className="space-y-2">
             {stats.recentLogs.map((log: any) => (
               <div key={log._id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 text-sm">
